@@ -21,6 +21,39 @@ log_success() { echo -e "${GREEN}[OK]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
+BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d_%H%M%S)"
+
+# Backup existing dotfiles
+backup_dotfiles() {
+    log_info "Backing up existing dotfiles..."
+    mkdir -p "$BACKUP_DIR"
+
+    local files_to_backup=(
+        ".zshrc"
+        ".bashrc"
+        ".bash_profile"
+        ".tmux.conf"
+        ".gitconfig"
+        ".p10k.zsh"
+        ".config/nvim"
+        ".config/starship.toml"
+    )
+
+    local backed_up=0
+    for file in "${files_to_backup[@]}"; do
+        if [ -e "$HOME/$file" ]; then
+            cp -r "$HOME/$file" "$BACKUP_DIR/"
+            ((backed_up++))
+        fi
+    done
+
+    if [ $backed_up -gt 0 ]; then
+        log_success "Backed up $backed_up files to $BACKUP_DIR"
+    else
+        log_info "No existing dotfiles to backup"
+    fi
+}
+
 # Detect OS
 detect_os() {
     if [ -f /etc/os-release ]; then
@@ -271,6 +304,7 @@ main() {
     echo ""
 
     detect_os
+    backup_dotfiles
     install_packages
     install_eza
     install_lazygit
