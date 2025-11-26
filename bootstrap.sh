@@ -21,6 +21,12 @@ log_success() { echo -e "${GREEN}[OK]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
+# Use sudo only if not root
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then
+    SUDO="sudo"
+fi
+
 BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d_%H%M%S)"
 
 # Detect architecture
@@ -66,7 +72,7 @@ backup_dotfiles() {
     for file in "${files_to_backup[@]}"; do
         if [ -e "$HOME/$file" ]; then
             cp -r "$HOME/$file" "$BACKUP_DIR/"
-            ((backed_up++))
+            backed_up=$((backed_up + 1))
         fi
     done
 
@@ -126,14 +132,14 @@ install_github_release() {
 
     # Find and install binary
     if [ -f "$extract_path" ]; then
-        sudo install -m 755 "$extract_path" /usr/local/bin/"$binary_name"
+        $SUDO install -m 755 "$extract_path" /usr/local/bin/"$binary_name"
     elif [ -f "$binary_name" ]; then
-        sudo install -m 755 "$binary_name" /usr/local/bin/"$binary_name"
+        $SUDO install -m 755 "$binary_name" /usr/local/bin/"$binary_name"
     else
         # Search for binary in extracted files
         local found_binary=$(find . -name "$binary_name" -type f -executable 2>/dev/null | head -1)
         if [ -n "$found_binary" ]; then
-            sudo install -m 755 "$found_binary" /usr/local/bin/"$binary_name"
+            $SUDO install -m 755 "$found_binary" /usr/local/bin/"$binary_name"
         else
             log_warn "Could not find $binary_name binary"
             cd - > /dev/null
@@ -153,35 +159,36 @@ install_base_packages() {
 
     case $OS in
         ubuntu|debian)
-            sudo apt update
-            sudo apt install -y \
+            $SUDO apt update
+            $SUDO apt install -y \
                 git curl wget zsh tmux \
                 fzf autojump jq unzip \
                 build-essential
             # Install neovim (may need PPA for latest)
-            sudo apt install -y neovim || true
+            $SUDO apt install -y neovim || true
             ;;
         fedora)
-            sudo dnf install -y \
+            $SUDO dnf install -y \
                 git curl wget zsh tmux \
                 fzf autojump jq unzip \
                 neovim
             ;;
         centos|rhel|rocky|alma)
-            sudo yum install -y epel-release || true
-            sudo yum install -y \
+            $SUDO yum install -y epel-release || true
+            $SUDO yum install -y \
                 git curl wget zsh tmux \
                 fzf jq unzip
             # neovim might need additional repo
-            sudo yum install -y neovim || log_warn "Install neovim manually"
+            $SUDO yum install -y neovim || log_warn "Install neovim manually"
             ;;
         arch|manjaro)
-            sudo pacman -Syu --noconfirm \
+            $SUDO pacman -Syu --noconfirm \
                 git curl wget zsh tmux neovim \
-                fzf autojump jq unzip base-devel
+                fzf jq unzip base-devel
+            # autojump is in AUR, skipping - use zoxide instead
             ;;
         opensuse*)
-            sudo zypper install -y \
+            $SUDO zypper install -y \
                 git curl wget zsh tmux neovim \
                 fzf autojump jq unzip
             ;;
