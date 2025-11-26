@@ -86,13 +86,13 @@ nvm() { __load_nvm; nvm "$@"; }
 node() { __load_nvm; node "$@"; }
 npm() { __load_nvm; npm "$@"; }
 npx() { __load_nvm; npx "$@"; }
-claude() { __load_nvm; /home/omar/.claude/local/claude "$@"; }
+claude() { __load_nvm; "$HOME/.claude/local/claude" "$@"; }
 
 # Lazy load Conda (also slow)
 __conda_setup() {
   unset -f conda mamba
-  export PATH="/home/omar/anaconda3/bin:$PATH"
-  source "/home/omar/anaconda3/etc/profile.d/conda.sh"
+  export PATH="$HOME/anaconda3/bin:$PATH"
+  source "$HOME/anaconda3/etc/profile.d/conda.sh"
   conda activate test
 }
 conda() { __conda_setup; conda "$@"; }
