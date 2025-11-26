@@ -100,13 +100,6 @@ mamba() { __conda_setup; mamba "$@"; }
 # Auto-activate if in conda project
 [[ -f "environment.yml" || -f "conda.yaml" ]] && __conda_setup
 
-# Lazy load autojump
-j() {
-  unset -f j
-  . /usr/share/autojump/autojump.sh
-  j "$@"
-}
-
 # Defer zoxide and atuin init
 zinit wait"0c" lucid for \
     atload'eval "$(zoxide init zsh)"' \

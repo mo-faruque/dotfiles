@@ -121,6 +121,9 @@ install_github_release() {
         *.tar.gz|*.tgz)
             tar xzf "$filename"
             ;;
+        *.tar.bz2|*.tbz)
+            tar xjf "$filename"
+            ;;
         *.zip)
             unzip -q "$filename"
             ;;
@@ -162,7 +165,7 @@ install_base_packages() {
             $SUDO apt update
             $SUDO apt install -y \
                 git curl wget zsh tmux \
-                fzf autojump jq unzip \
+                fzf jq unzip \
                 build-essential
             # Install neovim (may need PPA for latest)
             $SUDO apt install -y neovim || true
@@ -170,7 +173,7 @@ install_base_packages() {
         fedora)
             $SUDO dnf install -y \
                 git curl wget zsh tmux \
-                fzf autojump jq unzip \
+                fzf jq unzip \
                 neovim
             ;;
         centos|rhel|rocky|alma)
@@ -190,7 +193,7 @@ install_base_packages() {
         opensuse*)
             $SUDO zypper install -y \
                 git curl wget zsh tmux neovim \
-                fzf autojump jq unzip
+                fzf jq unzip
             ;;
         macos)
             if ! command -v brew &> /dev/null; then
@@ -200,7 +203,7 @@ install_base_packages() {
             fi
             brew install \
                 git curl wget zsh tmux neovim \
-                fzf autojump jq \
+                fzf jq \
                 eza bat fd ripgrep lazygit yazi gh tldr
             ;;
         *)
@@ -215,9 +218,9 @@ install_eza() {
     [ "$OS" = "macos" ] && return 0  # Already installed via brew
 
     if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "eza" "eza-community/eza" "linux-x86_64-musl.tar.gz" "eza"
+        install_github_release "eza" "eza-community/eza" "x86_64-unknown-linux-musl.tar.gz" "eza"
     else
-        install_github_release "eza" "eza-community/eza" "linux-aarch64.tar.gz" "eza"
+        install_github_release "eza" "eza-community/eza" "aarch64-unknown-linux-gnu.tar.gz" "eza"
     fi
 }
 
@@ -259,9 +262,9 @@ install_lazygit() {
     [ "$OS" = "macos" ] && return 0
 
     if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "lazygit" "jesseduffield/lazygit" "Linux_x86_64.tar.gz" "lazygit"
+        install_github_release "lazygit" "jesseduffield/lazygit" "linux_x86_64.tar.gz" "lazygit"
     else
-        install_github_release "lazygit" "jesseduffield/lazygit" "Linux_arm64.tar.gz" "lazygit"
+        install_github_release "lazygit" "jesseduffield/lazygit" "linux_arm64.tar.gz" "lazygit"
     fi
 }
 
@@ -270,9 +273,9 @@ install_yazi() {
     [ "$OS" = "macos" ] && return 0
 
     if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "yazi" "sxyazi/yazi" "x86_64-unknown-linux-musl.zip" "yazi"
+        install_github_release "yazi" "sxyazi/yazi" "yazi-x86_64-unknown-linux-musl.zip" "yazi"
     else
-        install_github_release "yazi" "sxyazi/yazi" "aarch64-unknown-linux-musl.zip" "yazi"
+        install_github_release "yazi" "sxyazi/yazi" "yazi-aarch64-unknown-linux-musl.zip" "yazi"
     fi
 }
 
@@ -284,6 +287,17 @@ install_gh() {
         install_github_release "gh" "cli/cli" "linux_amd64.tar.gz" "gh"
     else
         install_github_release "gh" "cli/cli" "linux_arm64.tar.gz" "gh"
+    fi
+}
+
+# Install btop (system monitor) - GitHub binary
+install_btop() {
+    [ "$OS" = "macos" ] && return 0
+
+    if [ "$ARCH" = "x86_64" ]; then
+        install_github_release "btop" "aristocratos/btop" "x86_64-linux-musl.tbz" "btop"
+    else
+        install_github_release "btop" "aristocratos/btop" "aarch64-linux-musl.tbz" "btop"
     fi
 }
 
@@ -435,6 +449,7 @@ main() {
     install_lazygit
     install_yazi
     install_gh
+    install_btop
     install_chezmoi
     install_zinit
     install_zoxide
@@ -458,6 +473,7 @@ main() {
     echo "  - lazygit: lg or lazygit"
     echo "  - yazi: yy (file manager)"
     echo "  - gh: GitHub CLI"
+    echo "  - btop: system monitor"
     echo "  - tldr: tldr <command>"
     echo "  - zoxide: z <directory>"
     echo "  - fzf: Ctrl+R (history), Ctrl+T (files)"
