@@ -198,13 +198,13 @@ install_base_packages() {
         macos)
             if ! command -v brew &> /dev/null; then
                 log_info "Installing Homebrew..."
-                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+                NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
                 eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null || eval "$(/usr/local/bin/brew shellenv)"
             fi
             brew install \
                 git curl wget zsh tmux neovim \
                 fzf jq \
-                eza bat fd ripgrep lazygit yazi gh tldr
+                eza bat fd ripgrep lazygit yazi gh tldr btop
             ;;
         *)
             log_warn "Unknown OS: $OS. Installing minimal packages..."
@@ -324,7 +324,10 @@ install_tldr() {
 install_zinit() {
     if [ ! -d "$HOME/.local/share/zinit" ]; then
         log_info "Installing Zinit..."
-        bash -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)" -- --skip-modify-rc
+        # Non-interactive install
+        ZINIT_HOME="$HOME/.local/share/zinit/zinit.git"
+        mkdir -p "$(dirname $ZINIT_HOME)"
+        git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
         log_success "Zinit installed"
     else
         log_info "Zinit already installed"
@@ -426,6 +429,12 @@ post_install() {
         bat cache --build 2>/dev/null || true
     fi
 
+    # Install neovim plugins (headless)
+    if command -v nvim &> /dev/null; then
+        log_info "Installing neovim plugins..."
+        nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
+    fi
+
     log_success "Post-install setup complete"
 }
 
@@ -482,9 +491,7 @@ main() {
     echo ""
     log_info "Next steps:"
     echo "  1. Restart your terminal or run: exec zsh"
-    echo "  2. Run 'p10k configure' to setup Powerlevel10k"
-    echo "  3. Open nvim and run ':Lazy sync' to install plugins"
-    echo "  4. In tmux, press 'prefix + I' to install plugins"
+    echo "  2. Run 'p10k configure' if prompt setup wizard appears"
     echo ""
 }
 
