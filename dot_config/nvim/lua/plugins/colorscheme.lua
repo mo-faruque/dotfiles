@@ -7,12 +7,12 @@ return {
     lazy = false,
     priority = 1000,
     opts = {
-      flavour = "mocha", -- latte, frappe, macchiato, mocha
+      flavour = "frappe", -- latte, frappe, macchiato, mocha
       background = {
         light = "latte",
         dark = "mocha",
       },
-      transparent_background = false,
+      transparent_background = true,
       show_end_of_buffer = false,
       term_colors = true,
       dim_inactive = {
