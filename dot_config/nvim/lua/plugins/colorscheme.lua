@@ -51,11 +51,11 @@ return {
     },
   },
 
-  -- Configure LazyVim to use Tokyo Night
+  -- Configure LazyVim to use Catppuccin
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "tokyonight-moon", -- Options: tokyonight-night, tokyonight-storm, tokyonight-moon, tokyonight-day
+      colorscheme = "catppuccin", -- Options: catppuccin-latte, catppuccin-frappe, catppuccin-macchiato, catppuccin-mocha
     },
   },
 }
