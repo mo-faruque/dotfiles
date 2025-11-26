@@ -23,6 +23,29 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d_%H%M%S)"
 
+# Detect architecture
+detect_arch() {
+    ARCH=$(uname -m)
+    case $ARCH in
+        x86_64) ARCH="x86_64" ; ARCH_ALT="amd64" ;;
+        aarch64|arm64) ARCH="aarch64" ; ARCH_ALT="arm64" ;;
+        *) log_error "Unsupported architecture: $ARCH"; exit 1 ;;
+    esac
+}
+
+# Detect OS
+detect_os() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        OS=$ID
+    elif [ "$(uname)" == "Darwin" ]; then
+        OS="macos"
+    else
+        OS="unknown"
+    fi
+    log_info "Detected OS: $OS ($ARCH)"
+}
+
 # Backup existing dotfiles
 backup_dotfiles() {
     log_info "Backing up existing dotfiles..."
@@ -54,123 +77,225 @@ backup_dotfiles() {
     fi
 }
 
-# Detect OS
-detect_os() {
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        OS=$ID
-    elif [ "$(uname)" == "Darwin" ]; then
-        OS="macos"
-    else
-        OS="unknown"
+# Helper: Install from GitHub release (binary)
+install_github_release() {
+    local name=$1
+    local repo=$2
+    local asset_pattern=$3
+    local binary_name=${4:-$name}
+    local extract_path=${5:-$binary_name}
+
+    if command -v "$binary_name" &> /dev/null; then
+        log_info "$name already installed"
+        return 0
     fi
-    log_info "Detected OS: $OS"
+
+    log_info "Installing $name from GitHub..."
+
+    local tmp_dir=$(mktemp -d)
+    cd "$tmp_dir"
+
+    # Get latest release asset URL
+    local asset_url=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | \
+        grep -o "\"browser_download_url\": \"[^\"]*${asset_pattern}[^\"]*\"" | \
+        head -1 | cut -d'"' -f4)
+
+    if [ -z "$asset_url" ]; then
+        log_warn "Could not find release for $name"
+        cd - > /dev/null
+        rm -rf "$tmp_dir"
+        return 1
+    fi
+
+    local filename=$(basename "$asset_url")
+    curl -sLO "$asset_url"
+
+    # Extract based on file type
+    case "$filename" in
+        *.tar.gz|*.tgz)
+            tar xzf "$filename"
+            ;;
+        *.zip)
+            unzip -q "$filename"
+            ;;
+        *)
+            chmod +x "$filename"
+            mv "$filename" "$binary_name"
+            ;;
+    esac
+
+    # Find and install binary
+    if [ -f "$extract_path" ]; then
+        sudo install -m 755 "$extract_path" /usr/local/bin/"$binary_name"
+    elif [ -f "$binary_name" ]; then
+        sudo install -m 755 "$binary_name" /usr/local/bin/"$binary_name"
+    else
+        # Search for binary in extracted files
+        local found_binary=$(find . -name "$binary_name" -type f -executable 2>/dev/null | head -1)
+        if [ -n "$found_binary" ]; then
+            sudo install -m 755 "$found_binary" /usr/local/bin/"$binary_name"
+        else
+            log_warn "Could not find $binary_name binary"
+            cd - > /dev/null
+            rm -rf "$tmp_dir"
+            return 1
+        fi
+    fi
+
+    cd - > /dev/null
+    rm -rf "$tmp_dir"
+    log_success "$name installed"
 }
 
-# Install packages based on OS
-install_packages() {
-    log_info "Installing packages..."
+# Install basic packages via package manager
+install_base_packages() {
+    log_info "Installing base packages..."
 
     case $OS in
         ubuntu|debian)
             sudo apt update
             sudo apt install -y \
-                git curl wget zsh tmux neovim \
-                fzf ripgrep fd-find autojump \
-                jq bat tldr gh
+                git curl wget zsh tmux \
+                fzf autojump jq unzip \
+                build-essential
+            # Install neovim (may need PPA for latest)
+            sudo apt install -y neovim || true
             ;;
         fedora)
             sudo dnf install -y \
-                git curl wget zsh tmux neovim \
-                fzf ripgrep fd-find autojump \
-                jq bat tldr gh
+                git curl wget zsh tmux \
+                fzf autojump jq unzip \
+                neovim
             ;;
-        arch)
+        centos|rhel|rocky|alma)
+            sudo yum install -y epel-release || true
+            sudo yum install -y \
+                git curl wget zsh tmux \
+                fzf jq unzip
+            # neovim might need additional repo
+            sudo yum install -y neovim || log_warn "Install neovim manually"
+            ;;
+        arch|manjaro)
             sudo pacman -Syu --noconfirm \
                 git curl wget zsh tmux neovim \
-                fzf ripgrep fd autojump \
-                jq bat tldr github-cli eza
+                fzf autojump jq unzip base-devel
+            ;;
+        opensuse*)
+            sudo zypper install -y \
+                git curl wget zsh tmux neovim \
+                fzf autojump jq unzip
             ;;
         macos)
             if ! command -v brew &> /dev/null; then
                 log_info "Installing Homebrew..."
                 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+                eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null || eval "$(/usr/local/bin/brew shellenv)"
             fi
             brew install \
                 git curl wget zsh tmux neovim \
-                fzf ripgrep fd autojump \
-                jq bat tldr gh eza lazygit yazi
+                fzf autojump jq \
+                eza bat fd ripgrep lazygit yazi gh tldr
             ;;
         *)
-            log_warn "Unknown OS. Please install packages manually."
+            log_warn "Unknown OS: $OS. Installing minimal packages..."
             ;;
     esac
-    log_success "Packages installed"
+    log_success "Base packages installed"
 }
 
-# Install eza (modern ls)
+# Install eza (modern ls) - GitHub binary
 install_eza() {
-    if ! command -v eza &> /dev/null; then
-        log_info "Installing eza..."
-        case $OS in
-            ubuntu|debian)
-                sudo mkdir -p /etc/apt/keyrings
-                wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
-                echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
-                sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
-                sudo apt update
-                sudo apt install -y eza
-                ;;
-            *)
-                log_warn "Install eza manually for your OS"
-                ;;
-        esac
-        log_success "eza installed"
+    [ "$OS" = "macos" ] && return 0  # Already installed via brew
+
+    if [ "$ARCH" = "x86_64" ]; then
+        install_github_release "eza" "eza-community/eza" "linux-x86_64-musl.tar.gz" "eza"
     else
-        log_info "eza already installed"
+        install_github_release "eza" "eza-community/eza" "linux-aarch64.tar.gz" "eza"
     fi
 }
 
-# Install lazygit
+# Install bat (modern cat) - GitHub binary
+install_bat() {
+    [ "$OS" = "macos" ] && return 0
+
+    if [ "$ARCH" = "x86_64" ]; then
+        install_github_release "bat" "sharkdp/bat" "x86_64-unknown-linux-musl.tar.gz" "bat"
+    else
+        install_github_release "bat" "sharkdp/bat" "aarch64-unknown-linux-gnu.tar.gz" "bat"
+    fi
+}
+
+# Install fd (modern find) - GitHub binary
+install_fd() {
+    [ "$OS" = "macos" ] && return 0
+
+    if [ "$ARCH" = "x86_64" ]; then
+        install_github_release "fd" "sharkdp/fd" "x86_64-unknown-linux-musl.tar.gz" "fd"
+    else
+        install_github_release "fd" "sharkdp/fd" "aarch64-unknown-linux-gnu.tar.gz" "fd"
+    fi
+}
+
+# Install ripgrep - GitHub binary
+install_ripgrep() {
+    [ "$OS" = "macos" ] && return 0
+
+    if [ "$ARCH" = "x86_64" ]; then
+        install_github_release "ripgrep" "BurntSushi/ripgrep" "x86_64-unknown-linux-musl.tar.gz" "rg"
+    else
+        install_github_release "ripgrep" "BurntSushi/ripgrep" "aarch64-unknown-linux-gnu.tar.gz" "rg"
+    fi
+}
+
+# Install lazygit - GitHub binary
 install_lazygit() {
-    if ! command -v lazygit &> /dev/null; then
-        log_info "Installing lazygit..."
-        case $OS in
-            ubuntu|debian)
-                LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-                curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-                tar xf lazygit.tar.gz lazygit
-                sudo install lazygit /usr/local/bin
-                rm lazygit lazygit.tar.gz
-                ;;
-            *)
-                log_warn "Install lazygit manually for your OS"
-                ;;
-        esac
-        log_success "lazygit installed"
+    [ "$OS" = "macos" ] && return 0
+
+    if [ "$ARCH" = "x86_64" ]; then
+        install_github_release "lazygit" "jesseduffield/lazygit" "Linux_x86_64.tar.gz" "lazygit"
     else
-        log_info "lazygit already installed"
+        install_github_release "lazygit" "jesseduffield/lazygit" "Linux_arm64.tar.gz" "lazygit"
     fi
 }
 
-# Install yazi (file manager)
+# Install yazi (file manager) - GitHub binary
 install_yazi() {
-    if ! command -v yazi &> /dev/null; then
-        log_info "Installing yazi..."
-        case $OS in
-            ubuntu|debian)
-                curl -Lo yazi.zip "https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-gnu.zip"
-                unzip yazi.zip
-                sudo install yazi-x86_64-unknown-linux-gnu/yazi /usr/local/bin
-                rm -rf yazi.zip yazi-x86_64-unknown-linux-gnu
-                ;;
-            *)
-                log_warn "Install yazi manually for your OS"
-                ;;
-        esac
-        log_success "yazi installed"
+    [ "$OS" = "macos" ] && return 0
+
+    if [ "$ARCH" = "x86_64" ]; then
+        install_github_release "yazi" "sxyazi/yazi" "x86_64-unknown-linux-musl.zip" "yazi"
     else
-        log_info "yazi already installed"
+        install_github_release "yazi" "sxyazi/yazi" "aarch64-unknown-linux-musl.zip" "yazi"
+    fi
+}
+
+# Install GitHub CLI - GitHub binary
+install_gh() {
+    [ "$OS" = "macos" ] && return 0
+
+    if [ "$ARCH" = "x86_64" ]; then
+        install_github_release "gh" "cli/cli" "linux_amd64.tar.gz" "gh"
+    else
+        install_github_release "gh" "cli/cli" "linux_arm64.tar.gz" "gh"
+    fi
+}
+
+# Install tldr - npm or binary
+install_tldr() {
+    [ "$OS" = "macos" ] && return 0
+
+    if command -v tldr &> /dev/null; then
+        log_info "tldr already installed"
+        return 0
+    fi
+
+    # Try npm first if available
+    if command -v npm &> /dev/null; then
+        log_info "Installing tldr via npm..."
+        npm install -g tldr
+        log_success "tldr installed"
+    else
+        log_warn "Install tldr after NVM setup: npm install -g tldr"
     fi
 }
 
@@ -185,7 +310,7 @@ install_zinit() {
     fi
 }
 
-# Install Starship prompt
+# Install Starship prompt - official installer
 install_starship() {
     if ! command -v starship &> /dev/null; then
         log_info "Installing Starship..."
@@ -196,7 +321,7 @@ install_starship() {
     fi
 }
 
-# Install zoxide
+# Install zoxide - official installer
 install_zoxide() {
     if ! command -v zoxide &> /dev/null; then
         log_info "Installing zoxide..."
@@ -207,7 +332,7 @@ install_zoxide() {
     fi
 }
 
-# Install atuin
+# Install atuin - official installer
 install_atuin() {
     if ! command -v atuin &> /dev/null; then
         log_info "Installing atuin..."
@@ -218,7 +343,7 @@ install_atuin() {
     fi
 }
 
-# Install NVM
+# Install NVM and Node
 install_nvm() {
     if [ ! -d "$HOME/.nvm" ]; then
         log_info "Installing NVM..."
@@ -263,7 +388,7 @@ install_chezmoi() {
 change_shell() {
     if [ "$SHELL" != "$(which zsh)" ]; then
         log_info "Changing default shell to zsh..."
-        chsh -s $(which zsh)
+        chsh -s $(which zsh) || log_warn "Could not change shell. Run: chsh -s \$(which zsh)"
         log_success "Default shell changed to zsh"
     else
         log_info "Shell is already zsh"
@@ -283,7 +408,7 @@ post_install() {
     # Install tmux plugins
     if [ -f ~/.tmux/plugins/tpm/bin/install_plugins ]; then
         log_info "Installing tmux plugins..."
-        ~/.tmux/plugins/tpm/bin/install_plugins
+        ~/.tmux/plugins/tpm/bin/install_plugins || true
     fi
 
     # Setup bat theme cache
@@ -303,18 +428,24 @@ main() {
     echo "=========================================="
     echo ""
 
+    detect_arch
     detect_os
     backup_dotfiles
-    install_packages
+    install_base_packages
     install_eza
+    install_bat
+    install_fd
+    install_ripgrep
     install_lazygit
     install_yazi
+    install_gh
     install_chezmoi
     install_zinit
     install_starship
     install_zoxide
     install_atuin
     install_nvm
+    install_tldr
     install_tpm
     change_shell
     post_install
@@ -327,11 +458,16 @@ main() {
     log_info "Installed tools:"
     echo "  - eza (ls replacement): ls, ll, la, lt"
     echo "  - bat (cat replacement): bat <file>"
+    echo "  - fd (find replacement): fd <pattern>"
+    echo "  - rg (grep replacement): rg <pattern>"
     echo "  - lazygit: lg or lazygit"
     echo "  - yazi: yy (file manager)"
+    echo "  - gh: GitHub CLI"
     echo "  - tldr: tldr <command>"
     echo "  - zoxide: z <directory>"
     echo "  - fzf: Ctrl+R (history), Ctrl+T (files)"
+    echo ""
+    log_info "Backup location: $BACKUP_DIR"
     echo ""
     log_info "Next steps:"
     echo "  1. Restart your terminal or run: exec zsh"
