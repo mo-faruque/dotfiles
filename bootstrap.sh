@@ -450,13 +450,13 @@ main() {
     install_yazi
     install_gh
     install_btop
+    install_tpm
     install_chezmoi
     install_zinit
     install_zoxide
     install_atuin
     install_nvm
     install_tldr
-    install_tpm
     change_shell
     post_install
 
