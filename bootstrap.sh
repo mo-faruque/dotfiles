@@ -368,6 +368,19 @@ install_nvm() {
         log_success "NVM installed with Node 18"
     else
         log_info "NVM already installed"
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    fi
+}
+
+# Install Claude Code
+install_claude_code() {
+    if ! command -v claude &> /dev/null; then
+        log_info "Installing Claude Code..."
+        npm install -g @anthropic-ai/claude-code
+        log_success "Claude Code installed"
+    else
+        log_info "Claude Code already installed"
     fi
 }
 
@@ -465,6 +478,7 @@ main() {
     install_zoxide
     install_atuin
     install_nvm
+    install_claude_code
     install_tldr
     change_shell
     post_install
@@ -486,6 +500,7 @@ main() {
     echo "  - tldr: tldr <command>"
     echo "  - zoxide: z <directory>"
     echo "  - fzf: Ctrl+R (history), Ctrl+T (files)"
+    echo "  - claude: Claude Code AI assistant"
     echo ""
     log_info "Backup location: $BACKUP_DIR"
     echo ""
