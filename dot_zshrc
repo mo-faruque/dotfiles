@@ -46,6 +46,34 @@ export PATH=$HOME/.local/share/gem/ruby/3.0.0/bin:$PATH
 # Aliases
 alias cls='clear'
 
+# eza (modern ls)
+if command -v eza &> /dev/null; then
+    alias ls='eza'
+    alias ll='eza -l --icons --git'
+    alias la='eza -la --icons --git'
+    alias lt='eza --tree --level=2 --icons'
+    alias l='eza -la --icons --git'
+fi
+
+# bat (modern cat)
+if command -v bat &> /dev/null; then
+    alias cat='bat --paging=never'
+    alias catp='bat'  # with pager
+fi
+
+# lazygit
+alias lg='lazygit'
+
+# yazi file manager (cd to dir on exit)
+function yy() {
+    local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+    yazi "$@" --cwd-file="$tmp"
+    if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+        cd -- "$cwd"
+    fi
+    rm -f -- "$tmp"
+}
+
 # Lazy load NVM (huge speed boost - NVM is slow)
 export NVM_DIR="$HOME/.nvm"
 __load_nvm() {
