@@ -2,3 +2,5 @@ CHEZMOI-TUTORIAL.md
 nvim-keybindings-cheatsheet.md
 tmux-cheatsheet.md
 *.md
+**/.git
+.config/nvim/lazy-lock.json
