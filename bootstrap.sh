@@ -310,17 +310,6 @@ install_zinit() {
     fi
 }
 
-# Install Starship prompt - official installer
-install_starship() {
-    if ! command -v starship &> /dev/null; then
-        log_info "Installing Starship..."
-        curl -sS https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin
-        log_success "Starship installed"
-    else
-        log_info "Starship already installed"
-    fi
-}
-
 # Install zoxide - official installer
 install_zoxide() {
     if ! command -v zoxide &> /dev/null; then
@@ -441,7 +430,6 @@ main() {
     install_gh
     install_chezmoi
     install_zinit
-    install_starship
     install_zoxide
     install_atuin
     install_nvm
