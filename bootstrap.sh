@@ -427,12 +427,34 @@ install_chezmoi() {
 
 # Change default shell to zsh
 change_shell() {
-    if [ "$SHELL" != "$(which zsh)" ]; then
-        log_info "Changing default shell to zsh..."
-        chsh -s $(which zsh) || log_warn "Could not change shell. Run: chsh -s \$(which zsh)"
-        log_success "Default shell changed to zsh"
-    else
+    local zsh_path=$(which zsh)
+
+    if [ "$SHELL" = "$zsh_path" ]; then
         log_info "Shell is already zsh"
+        return 0
+    fi
+
+    log_info "Changing default shell to zsh..."
+
+    # Method 1: If running as root, use chsh directly
+    if [ "$(id -u)" -eq 0 ]; then
+        chsh -s "$zsh_path" && log_success "Default shell changed to zsh" && return 0
+    fi
+
+    # Method 2: Try sudo chsh (works if user has sudo without password for chsh)
+    if $SUDO chsh -s "$zsh_path" "$(whoami)" 2>/dev/null; then
+        log_success "Default shell changed to zsh"
+        return 0
+    fi
+
+    # Method 3: Fallback - add exec zsh to .bashrc so bash auto-starts zsh
+    if ! grep -q "exec zsh" "$HOME/.bashrc" 2>/dev/null; then
+        log_warn "Could not change shell via chsh (requires password)"
+        log_info "Adding 'exec zsh' to .bashrc as fallback..."
+        echo '' >> "$HOME/.bashrc"
+        echo '# Start zsh automatically' >> "$HOME/.bashrc"
+        echo 'if [ -x "$(command -v zsh)" ]; then exec zsh; fi' >> "$HOME/.bashrc"
+        log_success "Zsh will start automatically from bash"
     fi
 }
 
