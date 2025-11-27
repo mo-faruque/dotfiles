@@ -203,7 +203,7 @@ install_base_packages() {
             brew install \
                 git curl wget zsh tmux neovim \
                 fzf jq \
-                eza bat fd ripgrep lazygit yazi gh tldr btop
+                eza bat fd ripgrep lazygit yazi gh tldr btop fastfetch
             ;;
         *)
             log_warn "Unknown OS: $OS. Installing minimal packages..."
@@ -297,6 +297,17 @@ install_btop() {
         install_github_release "btop" "aristocratos/btop" "x86_64-linux-musl.tbz" "btop"
     else
         install_github_release "btop" "aristocratos/btop" "aarch64-linux-musl.tbz" "btop"
+    fi
+}
+
+# Install fastfetch - GitHub binary
+install_fastfetch() {
+    [ "$OS" = "macos" ] && return 0
+
+    if [ "$ARCH" = "x86_64" ]; then
+        install_github_release "fastfetch" "fastfetch-cli/fastfetch" "linux-amd64.tar.gz" "fastfetch"
+    else
+        install_github_release "fastfetch" "fastfetch-cli/fastfetch" "linux-aarch64.tar.gz" "fastfetch"
     fi
 }
 
@@ -476,6 +487,7 @@ main() {
     install_yazi
     install_gh
     install_btop
+    install_fastfetch
     install_tpm
     install_chezmoi
     install_zinit
@@ -501,6 +513,7 @@ main() {
     echo "  - yazi: yy (file manager)"
     echo "  - gh: GitHub CLI"
     echo "  - btop: system monitor"
+    echo "  - fastfetch: system info"
     echo "  - tldr: tldr <command>"
     echo "  - zoxide: z <directory>"
     echo "  - fzf: Ctrl+R (history), Ctrl+T (files)"
