@@ -300,7 +300,7 @@ install_btop() {
     fi
 }
 
-# Install tldr - npm or binary
+# Install tldr - via npm
 install_tldr() {
     [ "$OS" = "macos" ] && return 0
 
@@ -309,14 +309,9 @@ install_tldr() {
         return 0
     fi
 
-    # Try npm first if available
-    if command -v npm &> /dev/null; then
-        log_info "Installing tldr via npm..."
-        npm install -g tldr
-        log_success "tldr installed"
-    else
-        log_warn "Install tldr after NVM setup: npm install -g tldr"
-    fi
+    log_info "Installing tldr via npm..."
+    npm install -g tldr
+    log_success "tldr installed"
 }
 
 # Install Zinit
