@@ -1,6 +1,10 @@
 # Auto-attach to tmux session (must be before anything else)
 # Detach/exit returns to shell
 if command -v tmux &> /dev/null && [ -z "$TMUX" ] && [[ $- == *i* ]]; then
+    # Use fallback socket path if /run/tmux doesn't exist
+    if [[ ! -d /run/tmux ]]; then
+        export TMUX_TMPDIR="${TMPDIR:-/tmp}"
+    fi
     tmux new-session -A -s default
 fi
 
