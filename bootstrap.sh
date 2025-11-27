@@ -447,6 +447,9 @@ install_chezmoi() {
     fi
 
     log_info "Applying dotfiles..."
+    # Ensure XDG_RUNTIME_DIR is set correctly (fixes permission issues)
+    export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}"
+    mkdir -p "$XDG_RUNTIME_DIR" 2>/dev/null || true
     chezmoi init --apply $GITHUB_USER
     log_success "Dotfiles applied"
 }
