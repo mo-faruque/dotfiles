@@ -398,6 +398,9 @@ install_tpm() {
 
 # Install chezmoi and apply dotfiles
 install_chezmoi() {
+    # Ensure ~/.local/bin is in PATH
+    export PATH="$HOME/.local/bin:$PATH"
+
     if ! command -v chezmoi &> /dev/null; then
         log_info "Installing chezmoi..."
         sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin
@@ -407,7 +410,7 @@ install_chezmoi() {
     fi
 
     log_info "Applying dotfiles..."
-    ~/.local/bin/chezmoi init --apply $GITHUB_USER
+    chezmoi init --apply $GITHUB_USER
     log_success "Dotfiles applied"
 }
 
