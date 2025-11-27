@@ -234,17 +234,6 @@ install_bat() {
     fi
 }
 
-# Install lsd (modern ls with icons) - GitHub binary
-install_lsd() {
-    [ "$OS" = "macos" ] && return 0
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "lsd" "lsd-rs/lsd" "x86_64-unknown-linux-musl.tar.gz" "lsd"
-    else
-        install_github_release "lsd" "lsd-rs/lsd" "aarch64-unknown-linux-musl.tar.gz" "lsd"
-    fi
-}
-
 # Install fd (modern find) - GitHub binary
 install_fd() {
     [ "$OS" = "macos" ] && return 0
@@ -542,7 +531,6 @@ main() {
     backup_dotfiles
     install_base_packages
     install_eza
-    install_lsd
     install_bat
     install_fd
     install_ripgrep
