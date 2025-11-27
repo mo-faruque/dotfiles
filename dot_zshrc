@@ -55,7 +55,7 @@ alias c='clear'
 
 # eza (modern ls)
 if command -v eza &> /dev/null; then
-    alias ls='eza'
+    alias ls='eza --icons'
     alias ll='eza -l --icons --git'
     alias la='eza -la --icons --git'
     alias lt='eza --tree --level=2 --icons'
