@@ -71,6 +71,9 @@ fi
 # lazygit
 alias lg='lazygit'
 
+# chezmoi
+alias cz='chezmoi'
+
 # tlrc alias (in case installed as tlrc instead of tldr)
 command -v tlrc &> /dev/null && ! command -v tldr &> /dev/null && alias tldr='tlrc'
 
