@@ -1,9 +1,3 @@
-# Auto-attach to tmux session (must be before anything else)
-# Detach/exit returns to shell
-if command -v tmux &> /dev/null && [ -z "$TMUX" ] && [[ $- == *i* ]]; then
-    tmux new-session -A -s default
-fi
-
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
@@ -18,7 +12,7 @@ zinit ice depth=1
 zinit light romkatv/powerlevel10k
 
 # Essential plugins with Turbo mode (deferred loading for max speed)
-zinit wait"0a" lucid for \
+zinit wait"1" lucid for \
     atinit"zicompinit; zicdreplay" \
         zdharma-continuum/fast-syntax-highlighting \
     atload"_zsh_autosuggest_start" \
@@ -27,7 +21,7 @@ zinit wait"0a" lucid for \
         zsh-users/zsh-completions
 
 # Git plugin (OMZ) with turbo - load later
-zinit wait"0b" lucid for \
+zinit wait"2" lucid for \
     OMZL::git.zsh \
     OMZP::git
 
@@ -116,8 +110,8 @@ mamba() { __conda_setup; mamba "$@"; }
 # Add atuin to PATH (installed to ~/.atuin/bin by official installer)
 [[ -d "$HOME/.atuin/bin" ]] && export PATH="$HOME/.atuin/bin:$PATH"
 
-# Defer zoxide and atuin init
-zinit wait"0c" lucid for \
+# Defer zoxide and atuin init (load after prompt is ready)
+zinit wait"3" lucid for \
     atload'eval "$(zoxide init zsh)"' \
         zdharma-continuum/null \
     atload'command -v atuin &>/dev/null && eval "$(atuin init zsh)"' \
@@ -128,4 +122,10 @@ zinit wait"0c" lucid for \
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Auto-attach to tmux session (at end for faster prompt display)
+# Detach/exit returns to shell
+if command -v tmux &> /dev/null && [ -z "$TMUX" ] && [[ $- == *i* ]]; then
+    tmux new-session -A -s default
+fi
 
