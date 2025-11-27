@@ -121,8 +121,8 @@ zinit wait"0c" lucid for \
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Auto-attach to tmux session (at the end, after shell is fully initialized)
-# Uses exec so detach/exit will close the terminal
+# Detach/exit returns to the shell
 if command -v tmux &> /dev/null && [ -z "$TMUX" ] && [[ $- == *i* ]]; then
-    exec tmux new-session -A -s default
+    tmux new-session -A -s default
 fi
 
