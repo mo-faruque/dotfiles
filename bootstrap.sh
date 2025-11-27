@@ -358,19 +358,26 @@ install_atuin() {
 
 # Install NVM and Node
 install_nvm() {
-    if [ ! -d "$HOME/.nvm" ]; then
+    export NVM_DIR="$HOME/.nvm"
+
+    if [ ! -d "$NVM_DIR" ]; then
         log_info "Installing NVM..."
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-        nvm install 18
-        nvm use 18
-        log_success "NVM installed with Node 18"
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
     else
         log_info "NVM already installed"
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     fi
+
+    # Load NVM
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+    # Install Node 18 if not present
+    if ! nvm ls 18 &>/dev/null; then
+        log_info "Installing Node 18..."
+        nvm install 18
+    fi
+
+    nvm use 18 --silent
+    log_success "NVM ready with Node $(node -v)"
 }
 
 # Install Claude Code
