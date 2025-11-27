@@ -203,7 +203,7 @@ install_base_packages() {
             brew install \
                 git curl wget zsh tmux neovim \
                 fzf jq \
-                eza bat fd ripgrep lazygit yazi gh tldr btop fastfetch
+                eza bat fd ripgrep lazygit yazi gh tlrc btop fastfetch
             ;;
         *)
             log_warn "Unknown OS: $OS. Installing minimal packages..."
@@ -311,7 +311,7 @@ install_fastfetch() {
     fi
 }
 
-# Install tldr - via npm
+# Install tldr (tlrc - Rust client) - GitHub binary
 install_tldr() {
     [ "$OS" = "macos" ] && return 0
 
@@ -320,9 +320,35 @@ install_tldr() {
         return 0
     fi
 
-    log_info "Installing tldr via npm..."
-    npm install -g tldr
-    log_success "tldr installed"
+    # tlrc only provides x86_64 Linux binaries
+    if [ "$ARCH" != "x86_64" ]; then
+        log_warn "tldr (tlrc) not available for $ARCH - install manually via cargo or pip"
+        return 0
+    fi
+
+    log_info "Installing tldr (tlrc) from GitHub..."
+
+    local tmp_dir=$(mktemp -d)
+    cd "$tmp_dir"
+
+    local asset_url=$(curl -s "https://api.github.com/repos/tldr-pages/tlrc/releases/latest" | \
+        grep -o '"browser_download_url": "[^"]*x86_64-unknown-linux-musl.tar.gz"' | \
+        cut -d'"' -f4)
+
+    if [ -z "$asset_url" ]; then
+        log_warn "Could not find tlrc release"
+        cd - > /dev/null
+        rm -rf "$tmp_dir"
+        return 1
+    fi
+
+    curl -sLO "$asset_url"
+    tar xzf *.tar.gz
+    $SUDO install -m 755 tldr /usr/local/bin/tldr
+
+    cd - > /dev/null
+    rm -rf "$tmp_dir"
+    log_success "tldr (tlrc) installed"
 }
 
 # Install Zinit
