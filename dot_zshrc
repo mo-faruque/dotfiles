@@ -51,7 +51,7 @@ export GEM_HOME=$HOME/.local/share/gem/ruby/3.0.0
 export PATH=$HOME/.local/share/gem/ruby/3.0.0/bin:$PATH
 
 # Aliases
-alias cls='clear'
+alias c='clear'
 
 # eza (modern ls)
 if command -v eza &> /dev/null; then
