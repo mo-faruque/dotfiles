@@ -7,7 +7,6 @@
 set -e
 
 GITHUB_USER="mo-faruque"
-DOTFILES_REPO="https://github.com/$GITHUB_USER/dotfiles.git"
 
 # Colors for output
 RED='\033[0;31m'
