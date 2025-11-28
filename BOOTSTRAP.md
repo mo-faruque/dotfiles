@@ -20,7 +20,7 @@ curl -fsSL https://raw.githubusercontent.com/mo-faruque/dotfiles/master/bootstra
 - **btop, fastfetch** - System monitor & info
 - **zoxide** - Smart cd
 - **atuin** - Shell history
-- **gh, tldr** - GitHub CLI, command cheatsheets
+- **gh, tldr, navi** - GitHub CLI, cheatsheets (Ctrl+G)
 - **Zinit + Powerlevel10k** - Zsh plugins
 - **LazyVim** - Neovim config
 - **TPM** - Tmux plugin manager

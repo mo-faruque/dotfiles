@@ -344,6 +344,17 @@ install_fastfetch() {
     fi
 }
 
+# Install navi (interactive cheatsheet) - GitHub binary
+install_navi() {
+    [ "$OS" = "macos" ] && return 0
+
+    if [ "$ARCH" = "x86_64" ]; then
+        install_github_release "navi" "denisidoro/navi" "x86_64-unknown-linux-musl.tar.gz" "navi"
+    else
+        install_github_release "navi" "denisidoro/navi" "aarch64-unknown-linux-gnu.tar.gz" "navi"
+    fi
+}
+
 # Install tldr (tlrc - Rust client) - GitHub binary
 install_tldr() {
     [ "$OS" = "macos" ] && return 0
@@ -810,6 +821,7 @@ main() {
     install_gh
     install_btop
     install_fastfetch
+    install_navi
     install_tpm
     install_chezmoi
     install_zinit
