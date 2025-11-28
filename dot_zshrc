@@ -72,11 +72,8 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 
 # Add paths (consolidated)
-export PATH="$HOME/.local/bin:$HOME/btop/bin:$HOME/bin:/usr/lib/wsl/lib:/usr/local/bin:/usr/bin:$PATH"
-
-# Ruby gems
 export GEM_HOME=$HOME/.local/share/gem/ruby/3.0.0
-export PATH=$HOME/.local/share/gem/ruby/3.0.0/bin:$PATH
+export PATH="$HOME/.local/bin:$HOME/btop/bin:$HOME/bin:$GEM_HOME/bin:/usr/lib/wsl/lib:/usr/local/bin:/usr/bin:$PATH"
 
 # Aliases
 alias c='clear'
@@ -87,7 +84,6 @@ if command -v eza &> /dev/null; then
     alias ll='eza -l --icons --git'
     alias la='eza -la --icons --git'
     alias lt='eza --tree --level=2 --icons'
-    alias l='eza -la --icons --git'
 fi
 
 # bat (modern cat)
