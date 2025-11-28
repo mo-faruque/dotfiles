@@ -35,11 +35,9 @@ zinit wait"2" lucid for \
     OMZL::git.zsh \
     OMZP::git
 
-# fzf - fuzzy finder (Ctrl+R history, Ctrl+T files, Alt+C directories)
-zinit wait"2" lucid from"gh-r" as"program" for \
-    junegunn/fzf
-
-zinit wait"2" lucid for \
+# fzf - fuzzy finder (Ctrl+T files, Alt+C directories)
+# Note: Ctrl+R is handled by atuin for history
+zinit lucid for \
     https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh \
     https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh
 
