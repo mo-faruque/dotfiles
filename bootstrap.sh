@@ -767,6 +767,14 @@ post_install() {
         nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
     fi
 
+    # Fetch navi community cheats
+    if command -v navi &> /dev/null; then
+        if [ ! -d "$HOME/.local/share/navi/cheats/denisidoro__cheats" ]; then
+            log_info "Fetching navi community cheats..."
+            navi repo add denisidoro/cheats 2>/dev/null || true
+        fi
+    fi
+
     log_success "Post-install setup complete"
 }
 
