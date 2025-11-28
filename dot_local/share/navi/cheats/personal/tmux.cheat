@@ -1,10 +1,13 @@
 % tmux, session
 
-# Start new tmux session
+# Start new named session
 tmux new -s <session_name>
 
-# Attach to existing session
+# Attach to session
 tmux a -t <session_name>
+
+# Attach to last session
+tmux a
 
 # List all sessions
 tmux ls
@@ -12,126 +15,49 @@ tmux ls
 # Kill a session
 tmux kill-session -t <session_name>
 
-# Detach from current session (prefix: Ctrl+a)
-; Ctrl+a d
+# Kill all sessions except current
+tmux kill-session -a
 
-# Rename current session
-; Ctrl+a $
+# Kill tmux server (all sessions)
+tmux kill-server
 
-# Switch to previous session
-; Ctrl+a (
-
-# Switch to next session
-; Ctrl+a )
-
-# List sessions interactively
-; Ctrl+a s
+# Rename session
+tmux rename-session -t <old_name> <new_name>
 
 % tmux, window
 
-# Create new window
-; Ctrl+a c
+# Create new window in session
+tmux new-window -t <session_name>
 
-# Rename current window
-; Ctrl+a ,
+# List windows
+tmux list-windows -t <session_name>
 
-# Next window
-; Ctrl+a n
-
-# Previous window
-; Ctrl+a p
-
-# Switch to window by number (0-9)
-; Ctrl+a <number>
-
-# List all windows
-; Ctrl+a w
-
-# Kill current window
-; Ctrl+a &
+# Kill window
+tmux kill-window -t <session_name>:<window_number>
 
 % tmux, pane
 
-# Split vertical (side by side)
-; Ctrl+a |
+# Send command to pane
+tmux send-keys -t <session_name>:<window>.<pane> "<command>" Enter
 
-# Split horizontal (top/bottom)
-; Ctrl+a -
-
-# Navigate to left pane
-; Ctrl+h
-
-# Navigate to bottom pane
-; Ctrl+j
-
-# Navigate to top pane
-; Ctrl+k
-
-# Navigate to right pane
-; Ctrl+l
-
-# Zoom pane (toggle fullscreen)
-; Ctrl+a z
-
-# Kill current pane
-; Ctrl+a x
-
-# Resize pane left
-; Ctrl+a H
-
-# Resize pane down
-; Ctrl+a J
-
-# Resize pane up
-; Ctrl+a K
-
-# Resize pane right
-; Ctrl+a L
-
-# Show pane numbers
-; Ctrl+a q
-
-% tmux, copy mode
-
-# Enter copy mode (vim keys work here)
-; Ctrl+a [
-
-# Start selection in copy mode
-; v or Space
-
-# Copy selection in copy mode
-; y or Enter
-
-# Paste from buffer
-; Ctrl+a ]
-
-# View paste buffer history
-; Ctrl+a #
-
-# Exit copy mode
-; q
+# Capture pane output to file
+tmux capture-pane -t <session_name> -p > <output_file>
 
 % tmux, other
 
-# Reload tmux config
-; Ctrl+a r
+# Reload config
+tmux source-file ~/.tmux.conf
 
-# List all keybindings
-; Ctrl+a ?
+# Show all keybindings
+tmux list-keys
 
-# Show clock
-; Ctrl+a t
-
-# Enter command mode
-; Ctrl+a ;
-
-# Install plugins (TPM)
-; Ctrl+a I
-
-# Save session (resurrect)
-; Ctrl+a Ctrl+s
-
-# Restore session (resurrect)
-; Ctrl+a Ctrl+r
+# Show options
+tmux show-options -g
 
 $ session_name: tmux ls 2>/dev/null | cut -d: -f1 --- --preview 'tmux capture-pane -pt {} 2>/dev/null'
+$ old_name: tmux ls 2>/dev/null | cut -d: -f1
+$ window_number: echo "0 1 2 3 4 5 6 7 8 9" | tr ' ' '\n'
+$ output_file: echo "/tmp/tmux-output.txt"
+$ command: echo ""
+$ pane: echo "0 1 2 3" | tr ' ' '\n'
+$ window: echo "0 1 2 3 4" | tr ' ' '\n'
