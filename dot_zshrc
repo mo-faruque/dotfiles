@@ -37,9 +37,8 @@ zinit wait"2" lucid for \
 
 # fzf - fuzzy finder (Ctrl+T files, Alt+C directories)
 # Note: Ctrl+R is handled by atuin for history
-zinit lucid for \
-    https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh \
-    https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh
+zinit ice lucid wait"0" pick"shell/key-bindings.zsh" src"shell/completion.zsh"
+zinit light junegunn/fzf
 
 # fzf settings
 export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border --info=inline"
