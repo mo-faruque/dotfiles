@@ -54,6 +54,13 @@ if command -v fd &>/dev/null; then
     export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
 fi
 
+# Completion styling
+zstyle ':completion:*' menu select                           # Enable menu selection
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'         # Case insensitive
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS} # Color completions
+zstyle ':completion:*' select-prompt '%SScrolling: %p%s'     # Show position in list
+zstyle ':completion:*:descriptions' format '%B%d%b'          # Bold descriptions
+
 # Autosuggest settings (async + optimized)
 export ZSH_AUTOSUGGEST_USE_ASYNC=1
 export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
