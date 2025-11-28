@@ -35,6 +35,25 @@ zinit wait"2" lucid for \
     OMZL::git.zsh \
     OMZP::git
 
+# fzf - fuzzy finder (Ctrl+R history, Ctrl+T files, Alt+C directories)
+zinit wait"2" lucid from"gh-r" as"program" for \
+    junegunn/fzf
+
+zinit wait"2" lucid for \
+    https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh \
+    https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh
+
+# fzf settings
+export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border --info=inline"
+export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:500 {} 2>/dev/null || cat {}'"
+export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --icons {} 2>/dev/null || ls {}'"
+# Use fd for faster file finding if available
+if command -v fd &>/dev/null; then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+fi
+
 # Autosuggest settings (async + optimized)
 export ZSH_AUTOSUGGEST_USE_ASYNC=1
 export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
