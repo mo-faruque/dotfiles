@@ -94,7 +94,7 @@ function yy() {
 # Lazy load NVM (huge speed boost - NVM is slow)
 export NVM_DIR="$HOME/.nvm"
 __load_nvm() {
-  unset -f nvm node npm npx claude __load_nvm
+  unset -f nvm node npm npx __load_nvm
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
   nvm use 18 --silent >/dev/null
@@ -103,7 +103,15 @@ nvm() { __load_nvm; nvm "$@"; }
 node() { __load_nvm; node "$@"; }
 npm() { __load_nvm; npm "$@"; }
 npx() { __load_nvm; npx "$@"; }
-claude() { __load_nvm; "$HOME/.claude/local/claude" "$@"; }
+
+# Claude Code - loads NVM if needed, always available
+claude() {
+  if ! command -v node &>/dev/null || [[ ! "$(node -v)" =~ ^v1[8-9]|^v2 ]]; then
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm use 18 --silent >/dev/null
+  fi
+  "$HOME/.claude/local/claude" "$@"
+}
 
 # Lazy load Conda (also slow)
 __conda_setup() {
