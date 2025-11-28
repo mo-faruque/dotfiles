@@ -98,14 +98,16 @@ __load_nvm() {
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
   nvm use 18 --silent >/dev/null
+  # Re-define claude to use loaded node directly
+  alias claude="$HOME/.claude/local/claude"
 }
 nvm() { __load_nvm; nvm "$@"; }
 node() { __load_nvm; node "$@"; }
 npm() { __load_nvm; npm "$@"; }
 npx() { __load_nvm; npx "$@"; }
 
-# Claude Code alias
-alias claude="$HOME/.claude/local/claude"
+# Claude Code (loads NVM first, then becomes alias)
+claude() { __load_nvm; "$HOME/.claude/local/claude" "$@"; }
 
 # Lazy load Conda (also slow)
 __conda_setup() {
