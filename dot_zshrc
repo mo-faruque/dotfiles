@@ -37,12 +37,8 @@ zinit wait"2" lucid for \
 
 # fzf - fuzzy finder (Ctrl+T files, Alt+C directories)
 # Note: Ctrl+R is handled by atuin for history
-# Different distros put fzf scripts in different places
-for fzf_dir in /usr/share/fzf /usr/share/fzf/shell /usr/share/doc/fzf/examples /usr/share/zsh/site-functions; do
-    [[ -f "$fzf_dir/key-bindings.zsh" ]] && source "$fzf_dir/key-bindings.zsh" && break
-done
-for fzf_dir in /usr/share/fzf /usr/share/fzf/shell /usr/share/doc/fzf/examples /usr/share/zsh/site-functions; do
-    [[ -f "$fzf_dir/completion.zsh" ]] && source "$fzf_dir/completion.zsh" && break
+for d in /usr/share/fzf{,/shell} /usr/share/doc/fzf/examples /usr/share/zsh/site-functions; do
+    [[ -f "$d/key-bindings.zsh" ]] && { source "$d/key-bindings.zsh"; source "$d/completion.zsh" 2>/dev/null; break; }
 done
 
 # fzf settings
