@@ -664,21 +664,11 @@ install_nvm() {
     log_success "NVM ready with Node $(node -v)"
 }
 
-# Install Claude Code to ~/.claude/local/
+# Install Claude Code (official installer)
 install_claude_code() {
     if [ ! -f "$HOME/.claude/local/claude" ]; then
         log_info "Installing Claude Code..."
-        mkdir -p "$HOME/.claude/local"
-        cd "$HOME/.claude/local"
-        npm init -y >/dev/null 2>&1
-        npm install @anthropic-ai/claude-code >/dev/null 2>&1
-        # Create wrapper script
-        cat > "$HOME/.claude/local/claude" << 'WRAPPER'
-#!/bin/bash
-exec "$HOME/.claude/local/node_modules/.bin/claude" "$@"
-WRAPPER
-        chmod +x "$HOME/.claude/local/claude"
-        cd - >/dev/null
+        curl -fsSL https://claude.ai/install.sh | bash
         log_success "Claude Code installed"
     else
         log_info "Claude Code already installed"
