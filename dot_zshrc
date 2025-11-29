@@ -124,8 +124,12 @@ node() { __load_nvm; node "$@"; }
 npm() { __load_nvm; npm "$@"; }
 npx() { __load_nvm; npx "$@"; }
 
-# Claude Code alias
-alias claude="$HOME/.claude/local/claude"
+# Claude Code - loads NVM and runs from ~/.claude/local/
+claude() {
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  nvm use 18 --silent >/dev/null 2>&1
+  "$HOME/.claude/local/claude" "$@"
+}
 
 # Lazy load Conda (also slow)
 __conda_setup() {
