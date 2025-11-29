@@ -664,7 +664,7 @@ install_nvm() {
     log_success "NVM ready with Node $(node -v)"
 }
 
-# Install Claude Code (uses official installer to create ~/.claude/local/claude)
+# Install Claude Code (npm local install with wrapper script)
 install_claude_code() {
     if [ -f "$HOME/.claude/local/claude" ]; then
         log_info "Claude Code already installed"
@@ -673,13 +673,27 @@ install_claude_code() {
 
     log_info "Installing Claude Code..."
 
-    # Ensure NVM and Node are loaded (installer requires Node.js)
+    # Ensure NVM and Node are loaded
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     nvm use 18 --silent 2>/dev/null || true
 
-    # Use official installer which creates ~/.claude/local/claude
-    curl -fsSL https://claude.ai/install.sh | bash
+    # Create local install directory
+    mkdir -p "$HOME/.claude/local"
+    cd "$HOME/.claude/local"
+
+    # Initialize package.json and install claude-code locally
+    npm init -y >/dev/null 2>&1
+    npm install @anthropic-ai/claude-code >/dev/null 2>&1
+
+    # Create wrapper script that zshrc expects
+    cat > "$HOME/.claude/local/claude" << 'WRAPPER'
+#!/bin/bash
+exec "$HOME/.claude/local/node_modules/.bin/claude" "$@"
+WRAPPER
+    chmod +x "$HOME/.claude/local/claude"
+
+    cd - > /dev/null
     log_success "Claude Code installed"
 }
 
