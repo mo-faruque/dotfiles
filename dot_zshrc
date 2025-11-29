@@ -124,11 +124,11 @@ node() { __load_nvm; node "$@"; }
 npm() { __load_nvm; npm "$@"; }
 npx() { __load_nvm; npx "$@"; }
 
-# Claude Code - loads NVM and runs claude from node bin
+# Claude Code - loads NVM and runs from ~/.claude/local/
 claude() {
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   nvm use 18 --silent >/dev/null 2>&1
-  "$NVM_DIR/versions/node/$(nvm current)/bin/claude" "$@"
+  "$HOME/.claude/local/claude" "$@"
 }
 
 # Lazy load Conda (also slow)
