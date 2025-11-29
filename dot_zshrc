@@ -124,13 +124,11 @@ node() { __load_nvm; node "$@"; }
 npm() { __load_nvm; npm "$@"; }
 npx() { __load_nvm; npx "$@"; }
 
-# Claude Code - loads NVM only if needed, runs from ~/.claude/local/
+# Claude Code - loads NVM and runs from ~/.claude/local/
 unalias claude 2>/dev/null
 claude() {
-  command -v node &>/dev/null || {
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    nvm use 18 --silent >/dev/null 2>&1
-  }
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  nvm use 18 --silent >/dev/null 2>&1
   "$HOME/.claude/local/claude" "$@"
 }
 
