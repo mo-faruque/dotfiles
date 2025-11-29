@@ -128,7 +128,7 @@ npx() { __load_nvm; npx "$@"; }
 claude() {
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   nvm use 18 --silent >/dev/null 2>&1
-  "$HOME/.claude/local/claude" "$@"
+  command claude "$@"
 }
 
 # Lazy load Conda (also slow)
