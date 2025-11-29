@@ -664,15 +664,17 @@ install_nvm() {
     log_success "NVM ready with Node $(node -v)"
 }
 
-# Install Claude Code
+# Install Claude Code (uses official installer to create ~/.claude/local/claude)
 install_claude_code() {
-    if ! command -v claude &> /dev/null; then
-        log_info "Installing Claude Code..."
-        npm install -g @anthropic-ai/claude-code
-        log_success "Claude Code installed"
-    else
+    if [ -f "$HOME/.claude/local/claude" ]; then
         log_info "Claude Code already installed"
+        return 0
     fi
+
+    log_info "Installing Claude Code..."
+    # Use official installer which creates ~/.claude/local/claude
+    curl -fsSL https://claude.ai/install.sh | bash
+    log_success "Claude Code installed"
 }
 
 # Install TPM (Tmux Plugin Manager)
