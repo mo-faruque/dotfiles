@@ -124,7 +124,7 @@ node() { __load_nvm; node "$@"; }
 npm() { __load_nvm; npm "$@"; }
 npx() { __load_nvm; npx "$@"; }
 
-# Claude Code - loads NVM and runs from ~/.claude/local/
+# Claude Code - always loads NVM first
 claude() {
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   nvm use 18 --silent >/dev/null 2>&1
