@@ -52,12 +52,29 @@ fi
 
 BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d_%H%M%S)"
 
-# Detect architecture
+# Detect architecture and set global asset patterns
 detect_arch() {
     ARCH=$(uname -m)
     case $ARCH in
-        x86_64) ARCH="x86_64" ; ARCH_ALT="amd64" ;;
-        aarch64|arm64) ARCH="aarch64" ; ARCH_ALT="arm64" ;;
+        x86_64)
+            ARCH="x86_64"
+            ARCH_ALT="amd64"
+            # Global asset patterns for GitHub releases
+            MUSL_PATTERN="x86_64-unknown-linux-musl"
+            GNU_PATTERN="x86_64-unknown-linux-gnu"
+            LINUX_PATTERN="linux_x86_64"
+            LINUX_ALT_PATTERN="linux-amd64"
+            LINUX_AMD_PATTERN="linux_amd64"
+            ;;
+        aarch64|arm64)
+            ARCH="aarch64"
+            ARCH_ALT="arm64"
+            MUSL_PATTERN="aarch64-unknown-linux-musl"
+            GNU_PATTERN="aarch64-unknown-linux-gnu"
+            LINUX_PATTERN="linux_arm64"
+            LINUX_ALT_PATTERN="linux-aarch64"
+            LINUX_AMD_PATTERN="linux_arm64"
+            ;;
         *) log_error "Unsupported architecture: $ARCH"; exit 1 ;;
     esac
 }
@@ -197,7 +214,7 @@ install_base_packages() {
             $SUDO apt update
             $SUDO apt install -y \
                 git curl wget zsh tmux \
-                fzf jq unzip \
+                jq unzip \
                 build-essential
             # Install neovim (may need PPA for latest)
             $SUDO apt install -y neovim || true
@@ -205,27 +222,27 @@ install_base_packages() {
         fedora)
             $SUDO dnf install -y \
                 git curl wget zsh tmux \
-                fzf jq unzip \
+                jq unzip \
                 neovim
             ;;
         centos|rhel|rocky|alma)
             $SUDO yum install -y epel-release || true
             $SUDO yum install -y \
                 git curl wget zsh tmux \
-                fzf jq unzip
+                jq unzip
             # neovim might need additional repo
             $SUDO yum install -y neovim || log_warn "Install neovim manually"
             ;;
         arch|manjaro)
             $SUDO pacman -Syu --noconfirm \
                 git curl wget zsh tmux neovim \
-                fzf jq unzip base-devel
+                jq unzip base-devel
             # autojump is in AUR, skipping - use zoxide instead
             ;;
         opensuse*)
             $SUDO zypper install -y \
                 git curl wget zsh tmux neovim \
-                fzf jq unzip
+                jq unzip
             ;;
         macos)
             if ! command -v brew &> /dev/null; then
@@ -236,7 +253,7 @@ install_base_packages() {
             brew install \
                 git curl wget zsh tmux neovim \
                 fzf jq \
-                eza bat fd ripgrep lazygit yazi gh tlrc btop fastfetch
+                eza bat fd ripgrep lazygit yazi gh tlrc btop fastfetch navi
             ;;
         *)
             log_warn "Unknown OS: $OS. Installing minimal packages..."
@@ -245,161 +262,65 @@ install_base_packages() {
     log_success "Base packages installed"
 }
 
-# Install eza (modern ls) - GitHub binary
+# GitHub binary install functions (use global patterns set by detect_arch)
 install_eza() {
-    [ "$OS" = "macos" ] && return 0  # Already installed via brew
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "eza" "eza-community/eza" "x86_64-unknown-linux-musl.tar.gz" "eza"
-    else
-        install_github_release "eza" "eza-community/eza" "aarch64-unknown-linux-gnu.tar.gz" "eza"
-    fi
+    install_github_release "eza" "eza-community/eza" "${MUSL_PATTERN}.tar.gz" "eza"
 }
 
-# Install bat (modern cat) - GitHub binary
 install_bat() {
-    [ "$OS" = "macos" ] && return 0
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "bat" "sharkdp/bat" "x86_64-unknown-linux-musl.tar.gz" "bat"
-    else
-        install_github_release "bat" "sharkdp/bat" "aarch64-unknown-linux-gnu.tar.gz" "bat"
-    fi
+    install_github_release "bat" "sharkdp/bat" "${MUSL_PATTERN}.tar.gz" "bat"
 }
 
-# Install fd (modern find) - GitHub binary
 install_fd() {
-    [ "$OS" = "macos" ] && return 0
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "fd" "sharkdp/fd" "x86_64-unknown-linux-musl.tar.gz" "fd"
-    else
-        install_github_release "fd" "sharkdp/fd" "aarch64-unknown-linux-gnu.tar.gz" "fd"
-    fi
+    install_github_release "fd" "sharkdp/fd" "${MUSL_PATTERN}.tar.gz" "fd"
 }
 
-# Install ripgrep - GitHub binary
 install_ripgrep() {
-    [ "$OS" = "macos" ] && return 0
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "ripgrep" "BurntSushi/ripgrep" "x86_64-unknown-linux-musl.tar.gz" "rg"
-    else
-        install_github_release "ripgrep" "BurntSushi/ripgrep" "aarch64-unknown-linux-gnu.tar.gz" "rg"
-    fi
+    install_github_release "ripgrep" "BurntSushi/ripgrep" "${MUSL_PATTERN}.tar.gz" "rg"
 }
 
-# Install lazygit - GitHub binary
 install_lazygit() {
-    [ "$OS" = "macos" ] && return 0
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "lazygit" "jesseduffield/lazygit" "linux_x86_64.tar.gz" "lazygit"
-    else
-        install_github_release "lazygit" "jesseduffield/lazygit" "linux_arm64.tar.gz" "lazygit"
-    fi
+    install_github_release "lazygit" "jesseduffield/lazygit" "${LINUX_PATTERN}.tar.gz" "lazygit"
 }
 
-# Install yazi (file manager) - GitHub binary
 install_yazi() {
-    [ "$OS" = "macos" ] && return 0
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "yazi" "sxyazi/yazi" "yazi-x86_64-unknown-linux-musl.zip" "yazi"
-    else
-        install_github_release "yazi" "sxyazi/yazi" "yazi-aarch64-unknown-linux-musl.zip" "yazi"
-    fi
+    install_github_release "yazi" "sxyazi/yazi" "yazi-${MUSL_PATTERN}.zip" "yazi"
 }
 
-# Install GitHub CLI - GitHub binary
 install_gh() {
-    [ "$OS" = "macos" ] && return 0
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "gh" "cli/cli" "linux_amd64.tar.gz" "gh"
-    else
-        install_github_release "gh" "cli/cli" "linux_arm64.tar.gz" "gh"
-    fi
+    install_github_release "gh" "cli/cli" "${LINUX_AMD_PATTERN}.tar.gz" "gh"
 }
 
-# Install btop (system monitor) - GitHub binary
 install_btop() {
-    [ "$OS" = "macos" ] && return 0
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "btop" "aristocratos/btop" "x86_64-linux-musl.tbz" "btop"
-    else
-        install_github_release "btop" "aristocratos/btop" "aarch64-linux-musl.tbz" "btop"
-    fi
+    install_github_release "btop" "aristocratos/btop" "${ARCH}-linux-musl.tbz" "btop"
 }
 
-# Install fastfetch - GitHub binary
 install_fastfetch() {
-    [ "$OS" = "macos" ] && return 0
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "fastfetch" "fastfetch-cli/fastfetch" "linux-amd64.tar.gz" "fastfetch"
-    else
-        install_github_release "fastfetch" "fastfetch-cli/fastfetch" "linux-aarch64.tar.gz" "fastfetch"
-    fi
+    install_github_release "fastfetch" "fastfetch-cli/fastfetch" "${LINUX_ALT_PATTERN}.tar.gz" "fastfetch"
 }
 
-# Install navi (interactive cheatsheet) - GitHub binary
 install_navi() {
-    [ "$OS" = "macos" ] && return 0
-
-    if [ "$ARCH" = "x86_64" ]; then
-        install_github_release "navi" "denisidoro/navi" "x86_64-unknown-linux-musl.tar.gz" "navi"
-    else
-        install_github_release "navi" "denisidoro/navi" "aarch64-unknown-linux-gnu.tar.gz" "navi"
-    fi
+    local pattern="${MUSL_PATTERN}"
+    [ "$ARCH" = "aarch64" ] && pattern="${GNU_PATTERN}"
+    install_github_release "navi" "denisidoro/navi" "${pattern}.tar.gz" "navi"
 }
 
-# Install tldr (tlrc - Rust client) - GitHub binary
 install_tldr() {
-    [ "$OS" = "macos" ] && return 0
-
-    if command -v tldr &> /dev/null; then
-        log_info "tldr already installed"
-        return 0
-    fi
-
     # tlrc only provides x86_64 Linux binaries
-    if [ "$ARCH" != "x86_64" ]; then
-        log_warn "tldr (tlrc) not available for $ARCH - install manually via cargo or pip"
-        return 0
+    [ "$ARCH" != "x86_64" ] && log_warn "tldr not available for $ARCH" && return 0
+    install_github_release "tldr" "tldr-pages/tlrc" "${MUSL_PATTERN}.tar.gz" "tldr"
+}
+
+install_fzf() {
+    install_github_release "fzf" "junegunn/fzf" "${LINUX_AMD_PATTERN}.tar.gz" "fzf"
+    # Download shell scripts for key bindings (Ctrl+T, Alt+C) and completion
+    if [ ! -f "$HOME/.local/share/fzf/key-bindings.zsh" ]; then
+        mkdir -p "$HOME/.local/share/fzf"
+        curl -sLo "$HOME/.local/share/fzf/key-bindings.zsh" \
+            "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh"
+        curl -sLo "$HOME/.local/share/fzf/completion.zsh" \
+            "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh"
     fi
-
-    log_info "Installing tldr (tlrc) from GitHub..."
-
-    local tmp_dir=$(mktemp -d)
-    cd "$tmp_dir"
-
-    local asset_url=$(curl -s "https://api.github.com/repos/tldr-pages/tlrc/releases/latest" | \
-        grep -o '"browser_download_url": "[^"]*x86_64-unknown-linux-musl.tar.gz"' | \
-        cut -d'"' -f4)
-
-    if [ -z "$asset_url" ]; then
-        log_warn "Could not find tlrc release"
-        cd - > /dev/null
-        rm -rf "$tmp_dir"
-        return 1
-    fi
-
-    curl -sLO "$asset_url"
-    tar xzf *.tar.gz
-
-    # Install to appropriate location
-    if [ "$USER_MODE" = true ]; then
-        mkdir -p "$USER_BIN"
-        install -m 755 tldr "$USER_BIN/tldr"
-    else
-        $SUDO install -m 755 tldr /usr/local/bin/tldr
-    fi
-
-    cd - > /dev/null
-    rm -rf "$tmp_dir"
-    log_success "tldr (tlrc) installed"
 }
 
 #############################################
@@ -529,48 +450,6 @@ install_neovim_user() {
     log_success "neovim installed to $USER_BIN"
 }
 
-# Install fzf binary + shell scripts (user mode)
-install_fzf_user() {
-    if command -v fzf &> /dev/null; then
-        log_info "fzf already installed"
-        return 0
-    fi
-
-    log_info "Installing fzf (user-space)..."
-
-    local tmp_dir=$(mktemp -d)
-    cd "$tmp_dir"
-
-    # Get latest version dynamically
-    local fzf_version=$(curl -s "https://api.github.com/repos/junegunn/fzf/releases/latest" | grep -o '"tag_name": "[^"]*"' | cut -d'"' -f4)
-    fzf_version=${fzf_version#v}  # Remove 'v' prefix if present
-
-    if [ "$ARCH" = "x86_64" ]; then
-        curl -sLo fzf.tar.gz "https://github.com/junegunn/fzf/releases/download/v${fzf_version}/fzf-${fzf_version}-linux_amd64.tar.gz"
-    elif [ "$ARCH" = "aarch64" ]; then
-        curl -sLo fzf.tar.gz "https://github.com/junegunn/fzf/releases/download/v${fzf_version}/fzf-${fzf_version}-linux_arm64.tar.gz"
-    else
-        log_error "No fzf binary available for $ARCH"
-        cd - > /dev/null
-        rm -rf "$tmp_dir"
-        return 1
-    fi
-
-    tar xzf fzf.tar.gz
-    mkdir -p "$USER_BIN"
-    cp fzf "$USER_BIN/fzf"
-    chmod +x "$USER_BIN/fzf"
-
-    # Download fzf shell scripts for keybindings and completion
-    mkdir -p "$USER_SHARE/fzf"
-    curl -sLo "$USER_SHARE/fzf/key-bindings.zsh" "https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh"
-    curl -sLo "$USER_SHARE/fzf/completion.zsh" "https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh"
-
-    cd - > /dev/null
-    rm -rf "$tmp_dir"
-    log_success "fzf installed to $USER_BIN with shell scripts in $USER_SHARE/fzf"
-}
-
 # Check git availability (required for user mode)
 check_git() {
     if command -v git &> /dev/null; then
@@ -599,7 +478,7 @@ install_base_packages_user() {
     install_zsh_user    # Shell
     install_tmux_user   # Terminal multiplexer
     install_neovim_user # Editor
-    install_fzf_user    # Fuzzy finder
+    # fzf installed with other GitHub tools in main()
 
     log_success "Base packages installed (user-space)"
 }
@@ -832,26 +711,43 @@ main() {
     detect_os
     backup_dotfiles
 
-    if [ "$USER_MODE" = true ]; then
-        # User-space installation (no sudo required)
-        log_info "Running in user-space mode (--no-sudo)"
-        install_base_packages_user  # zsh, tmux, neovim, fzf, git
-    else
-        # Normal installation with package manager
+    if [ "$OS" = "macos" ]; then
+        # macOS: always use brew (doesn't need sudo)
         install_base_packages
+    elif [ "$USER_MODE" = true ]; then
+        # Linux user-space installation (no sudo required)
+        log_info "Running in user-space mode (--no-sudo)"
+        install_base_packages_user  # zsh, tmux, neovim
+        # GitHub binary installs for CLI tools
+        install_fzf
+        install_eza
+        install_bat
+        install_fd
+        install_ripgrep
+        install_lazygit
+        install_yazi
+        install_gh
+        install_btop
+        install_fastfetch
+        install_navi
+        install_tldr
+    else
+        # Linux with sudo: package manager + GitHub binaries
+        install_base_packages
+        install_fzf
+        install_eza
+        install_bat
+        install_fd
+        install_ripgrep
+        install_lazygit
+        install_yazi
+        install_gh
+        install_btop
+        install_fastfetch
+        install_navi
+        install_tldr
     fi
 
-    # These all support user mode via install_github_release
-    install_eza
-    install_bat
-    install_fd
-    install_ripgrep
-    install_lazygit
-    install_yazi
-    install_gh
-    install_btop
-    install_fastfetch
-    install_navi
     install_tpm
     install_chezmoi
     install_zinit
@@ -859,7 +755,6 @@ main() {
     install_atuin
     install_nvm
     install_claude_code
-    install_tldr
 
     if [ "$USER_MODE" = true ]; then
         change_shell_user
