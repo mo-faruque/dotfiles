@@ -672,6 +672,12 @@ install_claude_code() {
     fi
 
     log_info "Installing Claude Code..."
+
+    # Ensure NVM and Node are loaded (installer requires Node.js)
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm use 18 --silent 2>/dev/null || true
+
     # Use official installer which creates ~/.claude/local/claude
     curl -fsSL https://claude.ai/install.sh | bash
     log_success "Claude Code installed"
