@@ -15,6 +15,14 @@
 
 set -e
 
+# Cleanup trap for interrupted installs
+cleanup() {
+    if [ -n "$TMP_DIR_TO_CLEAN" ] && [ -d "$TMP_DIR_TO_CLEAN" ]; then
+        rm -rf "$TMP_DIR_TO_CLEAN"
+    fi
+}
+trap cleanup EXIT
+
 GITHUB_USER="mo-faruque"
 
 # Parse arguments
@@ -139,10 +147,22 @@ install_github_release() {
     log_info "Installing $name from GitHub..."
 
     local tmp_dir=$(mktemp -d)
-    cd "$tmp_dir"
+    TMP_DIR_TO_CLEAN="$tmp_dir"  # For cleanup trap
+    cd "$tmp_dir" || { log_error "Failed to create temp dir"; return 1; }
 
-    # Get latest release asset URL
-    local asset_url=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | \
+    # Get latest release asset URL (with rate limit handling)
+    local api_response=$(curl -s "https://api.github.com/repos/$repo/releases/latest")
+
+    # Check for rate limit or API errors
+    if echo "$api_response" | grep -q "API rate limit exceeded\|Not Found"; then
+        log_warn "GitHub API error for $name (rate limit or not found)"
+        cd - > /dev/null
+        rm -rf "$tmp_dir"
+        TMP_DIR_TO_CLEAN=""
+        return 1
+    fi
+
+    local asset_url=$(echo "$api_response" | \
         grep -o "\"browser_download_url\": \"[^\"]*${asset_pattern}[^\"]*\"" | \
         head -1 | cut -d'"' -f4)
 
@@ -150,6 +170,7 @@ install_github_release() {
         log_warn "Could not find release for $name"
         cd - > /dev/null
         rm -rf "$tmp_dir"
+        TMP_DIR_TO_CLEAN=""
         return 1
     fi
 
@@ -165,7 +186,15 @@ install_github_release() {
             tar xjf "$filename"
             ;;
         *.zip)
-            unzip -q "$filename"
+            if command -v unzip &> /dev/null; then
+                unzip -q "$filename"
+            else
+                log_warn "unzip not available, skipping $name"
+                cd - > /dev/null
+                rm -rf "$tmp_dir"
+                TMP_DIR_TO_CLEAN=""
+                return 1
+            fi
             ;;
         *)
             chmod +x "$filename"
@@ -188,20 +217,22 @@ install_github_release() {
     elif [ -f "$binary_name" ]; then
         $install_cmd "$binary_name" "$install_dir/$binary_name"
     else
-        # Search for binary in extracted files
-        local found_binary=$(find . -name "$binary_name" -type f -executable 2>/dev/null | head -1)
+        # Search for binary in extracted files (compatible with macOS and Linux)
+        local found_binary=$(find . -name "$binary_name" -type f \( -perm -u=x -o -perm -g=x -o -perm -o=x \) 2>/dev/null | head -1)
         if [ -n "$found_binary" ]; then
             $install_cmd "$found_binary" "$install_dir/$binary_name"
         else
             log_warn "Could not find $binary_name binary"
             cd - > /dev/null
             rm -rf "$tmp_dir"
+            TMP_DIR_TO_CLEAN=""
             return 1
         fi
     fi
 
     cd - > /dev/null
     rm -rf "$tmp_dir"
+    TMP_DIR_TO_CLEAN=""
     log_success "$name installed"
 }
 
