@@ -214,7 +214,7 @@ install_base_packages() {
             $SUDO apt update
             $SUDO apt install -y \
                 git curl wget zsh tmux \
-                jq unzip \
+                jq unzip trash-cli \
                 build-essential
             # Install neovim (may need PPA for latest)
             $SUDO apt install -y neovim || true
@@ -222,27 +222,27 @@ install_base_packages() {
         fedora)
             $SUDO dnf install -y \
                 git curl wget zsh tmux \
-                jq unzip \
+                jq unzip trash-cli \
                 neovim
             ;;
         centos|rhel|rocky|alma)
             $SUDO yum install -y epel-release || true
             $SUDO yum install -y \
                 git curl wget zsh tmux \
-                jq unzip
+                jq unzip trash-cli
             # neovim might need additional repo
             $SUDO yum install -y neovim || log_warn "Install neovim manually"
             ;;
         arch|manjaro)
             $SUDO pacman -Syu --noconfirm \
                 git curl wget zsh tmux neovim \
-                jq unzip base-devel
+                jq unzip trash-cli base-devel
             # autojump is in AUR, skipping - use zoxide instead
             ;;
         opensuse*)
             $SUDO zypper install -y \
                 git curl wget zsh tmux neovim \
-                jq unzip
+                jq unzip trash-cli
             ;;
         macos)
             if ! command -v brew &> /dev/null; then
@@ -252,7 +252,7 @@ install_base_packages() {
             fi
             brew install \
                 git curl wget zsh tmux neovim \
-                fzf jq \
+                fzf jq trash-cli \
                 eza bat fd ripgrep lazygit yazi gh tlrc btop fastfetch navi
             ;;
         *)
@@ -782,6 +782,7 @@ main() {
     echo "  - tldr: tldr <command>"
     echo "  - zoxide: z <directory>"
     echo "  - fzf: Ctrl+R (history), Ctrl+T (files)"
+    echo "  - trash-cli: rm (safe delete), trash, restore, empty-trash"
     echo "  - claude: Claude Code AI assistant"
     echo ""
     if [ "$USER_MODE" = true ]; then

@@ -78,6 +78,14 @@ export PATH="$HOME/.local/bin:$HOME/bin:$GEM_HOME/bin:/usr/lib/wsl/lib:/usr/loca
 # Aliases
 alias c='clear'
 
+# trash-cli (safe rm)
+if command -v trash-put &> /dev/null; then
+    alias rm='trash-put'
+    alias trash='trash-list'
+    alias restore='trash-restore'
+    alias empty-trash='trash-empty'
+fi
+
 # eza (modern ls)
 if command -v eza &> /dev/null; then
     alias ls='eza --icons'
