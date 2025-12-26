@@ -368,7 +368,8 @@ install_zsh_user() {
     log_info "Installing zsh (user-space)..."
 
     local tmp_dir=$(mktemp -d)
-    cd "$tmp_dir"
+    TMP_DIR_TO_CLEAN="$tmp_dir"
+    cd "$tmp_dir" || { log_error "Failed to create temp dir"; return 1; }
 
     # romkatv provides static zsh binaries
     if [ "$ARCH" = "x86_64" ]; then
@@ -379,13 +380,14 @@ install_zsh_user() {
         log_error "No static zsh binary available for $ARCH"
         cd - > /dev/null
         rm -rf "$tmp_dir"
+        TMP_DIR_TO_CLEAN=""
         return 1
     fi
 
     tar xzf zsh.tar.gz
     mkdir -p "$USER_BIN"
-    # Find the zsh binary in extracted files
-    local zsh_bin=$(find . -name "zsh" -type f -executable 2>/dev/null | head -1)
+    # Find the zsh binary in extracted files (macOS compatible)
+    local zsh_bin=$(find . -name "zsh" -type f \( -perm -u=x -o -perm -g=x -o -perm -o=x \) 2>/dev/null | head -1)
     if [ -n "$zsh_bin" ]; then
         cp "$zsh_bin" "$USER_BIN/zsh"
         chmod +x "$USER_BIN/zsh"
@@ -397,6 +399,7 @@ install_zsh_user() {
 
     cd - > /dev/null
     rm -rf "$tmp_dir"
+    TMP_DIR_TO_CLEAN=""
     log_success "zsh installed to $USER_BIN"
 }
 
@@ -417,7 +420,8 @@ install_tmux_user() {
     log_info "Installing tmux (user-space)..."
 
     local tmp_dir=$(mktemp -d)
-    cd "$tmp_dir"
+    TMP_DIR_TO_CLEAN="$tmp_dir"
+    cd "$tmp_dir" || { log_error "Failed to create temp dir"; return 1; }
 
     # Download AppImage and extract binary
     curl -sLo tmux.appimage "https://github.com/nelsonenzo/tmux-appimage/releases/download/3.5a/tmux.appimage"
@@ -441,6 +445,7 @@ install_tmux_user() {
 
     cd - > /dev/null
     rm -rf "$tmp_dir"
+    TMP_DIR_TO_CLEAN=""
     log_success "tmux installed to $USER_BIN"
 }
 
@@ -454,7 +459,8 @@ install_neovim_user() {
     log_info "Installing neovim (user-space)..."
 
     local tmp_dir=$(mktemp -d)
-    cd "$tmp_dir"
+    TMP_DIR_TO_CLEAN="$tmp_dir"
+    cd "$tmp_dir" || { log_error "Failed to create temp dir"; return 1; }
 
     if [ "$ARCH" = "x86_64" ]; then
         curl -sLo nvim.tar.gz "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
@@ -473,11 +479,13 @@ install_neovim_user() {
         log_error "No neovim binary available for $ARCH"
         cd - > /dev/null
         rm -rf "$tmp_dir"
+        TMP_DIR_TO_CLEAN=""
         return 1
     fi
 
     cd - > /dev/null
     rm -rf "$tmp_dir"
+    TMP_DIR_TO_CLEAN=""
     log_success "neovim installed to $USER_BIN"
 }
 
@@ -520,7 +528,7 @@ install_zinit() {
         log_info "Installing Zinit..."
         # Non-interactive install
         ZINIT_HOME="$HOME/.local/share/zinit/zinit.git"
-        mkdir -p "$(dirname $ZINIT_HOME)"
+        mkdir -p "$(dirname "$ZINIT_HOME")"
         git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
         log_success "Zinit installed"
     else
@@ -590,7 +598,7 @@ install_claude_code() {
 
     # Create local install directory
     mkdir -p "$HOME/.claude/local"
-    cd "$HOME/.claude/local"
+    cd "$HOME/.claude/local" || { log_error "Failed to cd to claude directory"; return 1; }
 
     # Initialize package.json and install claude-code locally
     npm init -y >/dev/null 2>&1
