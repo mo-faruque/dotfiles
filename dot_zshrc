@@ -122,21 +122,22 @@ function yy() {
 # Lazy load NVM (huge speed boost - NVM is slow)
 export NVM_DIR="$HOME/.nvm"
 __load_nvm() {
-  unset -f nvm node npm npx __load_nvm
+  unset -f nvm node npm npx gemini __load_nvm
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-  nvm use 18 --silent >/dev/null
+  nvm use 20 --silent >/dev/null
 }
 nvm() { __load_nvm; nvm "$@"; }
 node() { __load_nvm; node "$@"; }
 npm() { __load_nvm; npm "$@"; }
 npx() { __load_nvm; npx "$@"; }
+gemini() { __load_nvm; gemini "$@"; }
 
 # Claude Code - loads NVM and runs from ~/.claude/local/
 unalias claude 2>/dev/null
 claude() {
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-  nvm use 18 --silent >/dev/null 2>&1
+  nvm use 20 --silent >/dev/null 2>&1
   "$HOME/.claude/local/claude" "$@"
 }
 
@@ -170,3 +171,4 @@ zinit wait"3" lucid for \
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+export CHROMIUM_FLAGS="--password-store=basic"
