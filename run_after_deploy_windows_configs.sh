@@ -14,5 +14,8 @@ cp -u "$HOME/.config/yasb/config.yaml" "$WIN_HOME/.config/yasb/config.yaml" 2>/d
 cp -u "$HOME/.config/yasb/styles.css" "$WIN_HOME/.config/yasb/styles.css" 2>/dev/null
 
 # PowerShell profile
-mkdir -p "$WIN_HOME/OneDrive/Documents/PowerShell"
-cp -u "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" "$WIN_HOME/OneDrive/Documents/PowerShell/Microsoft.PowerShell_profile.ps1" 2>/dev/null
+mkdir -p "$WIN_HOME/Documents/PowerShell"
+cp -u "$HOME/.config/powershell/Microsoft.PowerShell_profile.ps1" "$WIN_HOME/Documents/PowerShell/Microsoft.PowerShell_profile.ps1" 2>/dev/null
+
+# WHKD config
+cp -u "$HOME/.config/whkd/whkdrc" "$WIN_HOME/.config/whkdrc" 2>/dev/null

@@ -1,0 +1,107 @@
+.shell powershell
+
+# Reload config
+alt + shift + r         : komorebic reload-configuration; taskkill /f /im whkd.exe; Start-Process whkd -WindowStyle hidden
+alt + shift + w         : komorebic retile
+
+# Focus windows (alt+h/j/k/l or alt+arrows)
+alt + h                 : komorebic focus left
+alt + j                 : komorebic focus down
+alt + k                 : komorebic focus up
+alt + l                 : komorebic focus right
+alt + left              : komorebic focus left
+alt + down              : komorebic focus down
+alt + up                : komorebic focus up
+alt + right             : komorebic focus right
+
+# Move windows (alt+shift+h/j/k/l or alt+shift+arrows)
+alt + shift + h         : komorebic move left
+alt + shift + j         : komorebic move down
+alt + shift + k         : komorebic move up
+alt + shift + l         : komorebic move right
+alt + shift + left      : komorebic move left
+alt + shift + down      : komorebic move down
+alt + shift + up        : komorebic move up
+alt + shift + right     : komorebic move right
+
+# Resize (alt+u/p for width, alt+i/o for height)
+alt + u                 : komorebic resize-axis horizontal decrease
+alt + p                 : komorebic resize-axis horizontal increase
+alt + o                 : komorebic resize-axis vertical increase
+alt + i                 : komorebic resize-axis vertical decrease
+
+# Toggle tiling direction (alt+v)
+alt + v                 : komorebic flip-layout horizontal
+
+# Cycle focus (alt+tab alternative)
+alt + oem_3             : komorebic cycle-focus next
+
+# Toggle floating centered (alt+shift+space)
+alt + shift + space     : komorebic toggle-float; komorebic resize-window-edge right increase; komorebic resize-window-edge right increase; komorebic resize-window-edge left increase; komorebic resize-window-edge left increase; komorebic resize-window-edge bottom increase; komorebic resize-window-edge bottom increase; komorebic resize-window-edge top increase; komorebic resize-window-edge top increase
+
+# Toggle tiling (alt+t)
+alt + t                 : komorebic toggle-float
+
+# Toggle fullscreen/monocle (alt+f)
+alt + f                 : komorebic toggle-monocle
+
+# Minimize (alt+m)
+alt + m                 : komorebic minimize
+
+# Close window (alt+shift+q)
+alt + q                 : komorebic close
+
+# Launch terminal (alt+enter)
+alt + return            : cmd
+
+# Focus workspaces (alt+1-9)
+alt + 1                 : komorebic focus-workspace 0
+alt + 2                 : komorebic focus-workspace 1
+alt + 3                 : komorebic focus-workspace 2
+alt + 4                 : komorebic focus-workspace 3
+alt + 5                 : komorebic focus-workspace 4
+alt + 6                 : komorebic focus-workspace 5
+alt + 7                 : komorebic focus-workspace 6
+alt + 8                 : komorebic focus-workspace 7
+alt + 9                 : komorebic focus-workspace 8
+
+# Cycle workspaces (alt+a/s/d)
+alt + a                 : komorebic cycle-workspace previous
+alt + s                 : komorebic cycle-workspace next
+alt + d                 : komorebic focus-last-workspace
+
+# Move window to workspace and focus (alt+shift+1-9)
+alt + shift + 1         : komorebic move-to-workspace 0; komorebic focus-workspace 0
+alt + shift + 2         : komorebic move-to-workspace 1; komorebic focus-workspace 1
+alt + shift + 3         : komorebic move-to-workspace 2; komorebic focus-workspace 2
+alt + shift + 4         : komorebic move-to-workspace 3; komorebic focus-workspace 3
+alt + shift + 5         : komorebic move-to-workspace 4; komorebic focus-workspace 4
+alt + shift + 6         : komorebic move-to-workspace 5; komorebic focus-workspace 5
+alt + shift + 7         : komorebic move-to-workspace 6; komorebic focus-workspace 6
+alt + shift + 8         : komorebic move-to-workspace 7; komorebic focus-workspace 7
+alt + shift + 9         : komorebic move-to-workspace 8; komorebic focus-workspace 8
+
+# Move workspace to monitor (alt+shift+a/s/d/f)
+alt + shift + a         : komorebic move-workspace-to-monitor left
+alt + shift + f         : komorebic move-workspace-to-monitor right
+alt + shift + d         : komorebic move-workspace-to-monitor up
+alt + shift + s         : komorebic move-workspace-to-monitor down
+
+# Pause tiling (alt+shift+p)
+alt + shift + p         : komorebic toggle-pause
+
+# ========== QUICK LAUNCH SHORTCUTS ==========
+# Browser (opens in current workspace)
+alt + b                 : & "$env:USERPROFILE\.config\launch-app.ps1" -AppPath "chrome"
+
+# Code Editor (opens in current workspace)
+alt + c                 : & "$env:USERPROFILE\.config\launch-app.ps1" -AppPath "code"
+
+# Terminal (opens in current workspace)
+alt + shift + return    : & "$env:USERPROFILE\.config\launch-app.ps1" -AppPath "wt"
+
+# File Explorer (opens in current workspace)
+alt + e                 : & "$env:USERPROFILE\.config\launch-app.ps1" -AppPath "explorer"
+
+# Sublime Text (opens in current workspace)
+alt + n                 : & "$env:USERPROFILE\.config\launch-app.ps1" -AppPath "C:\Program Files\Sublime Text\sublime_text.exe"
