@@ -7,6 +7,7 @@ WIN_HOME="/mnt/c/Users/write"
 # Komorebi configs
 cp -u "$HOME/.config/komorebi/komorebi.json" "$WIN_HOME/komorebi.json" 2>/dev/null
 cp -u "$HOME/.config/komorebi/komorebi.bar.json" "$WIN_HOME/komorebi.bar.json" 2>/dev/null
+cp -u "$HOME/.config/komorebi/applications.json" "$WIN_HOME/applications.json" 2>/dev/null
 
 # YASB configs
 mkdir -p "$WIN_HOME/.config/yasb"
