@@ -41,6 +41,13 @@ for d in "$HOME/.local/share/fzf" /usr/share/fzf{,/shell} /usr/share/doc/fzf/exa
     [[ -f "$d/key-bindings.zsh" ]] && { source "$d/key-bindings.zsh"; source "$d/completion.zsh" 2>/dev/null; break; }
 done
 
+# Word navigation keybindings (Ctrl+Arrow and Alt+Arrow)
+bindkey '^[[1;5D' backward-word    # Ctrl+Left
+bindkey '^[[1;5C' forward-word     # Ctrl+Right
+bindkey '^[b' backward-word        # Alt+Left (tmux compat)
+bindkey '^[f' forward-word         # Alt+Right (tmux compat)
+bindkey '^H' backward-kill-word    # Ctrl+Backspace
+
 # fzf settings
 export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border --info=inline"
 export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:500 {} 2>/dev/null || cat {}'"
